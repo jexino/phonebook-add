@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 const express = require("express");
-const hbs = require('hbs');
 const path = require('path');
 const bodyParser = require("body-parser");
 
 const ContactModel = require('./models/contact');
+const { title } = require("process");
 const app = express();
 
 const PORT = 3000;
@@ -28,7 +28,13 @@ app.use(bodyParser.json());
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Home Page Route
+app.get('/', (req, res) => {
+  res.render('home', { title: 'phonebook-app', message: 'Welcome to My Phonebook-App!' });
+});
 
+
+//Add Contact Page
 app.get('/phonebook/add', (req, res) => {
   res.render('phonebookadd');
 });
