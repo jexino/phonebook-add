@@ -9,6 +9,8 @@ const app = express();
 
 const PORT = 3000;
 
+let callLogs = []; // In-memory call logs
+
 //DB Connection
 const dbHostUrl = 'mongodb://127.0.0.1:27017/phonebook_db';
 mongoose.Promise = global.Promise;mongoose.connect(dbHostUrl, {
@@ -29,8 +31,28 @@ app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Home Page Route
-app.get('/', (req, res) => {
-  res.render('home', { title: 'phonebook-app', message: 'Welcome to My Phonebook-App!' });
+app.get('/', async(req, res) => {
+  const contacts = await ContactModel.find();
+  res.render('home', {data:contacts, title: 'phonebook-app', message: ' Phonebook' });
+});
+
+// Route to handle a fake call
+app.post('/call', (req, res) => {
+  const { phoneNumber, contactName } = req.body;
+  // Ensure both phoneNumber and contactName are being logged
+  console.log(`Logging call: ${contactName} - ${phoneNumber}`);
+  
+  // Store the call with name and phone number
+  const callRecord = { phoneNumber, contactName, timestamp: new Date() };
+  callLogs.push(callRecord); // Save the call in the logs
+
+  res.status(200).send('Call logged');
+});
+
+// Route to retrieve recent calls
+app.get('/recent-calls', (req, res) => {
+  // Return the sorted call logs with correct fields (phoneNumber and contactName)
+  res.json(callLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
 });
 
 

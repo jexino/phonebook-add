@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{title}}</title>
-  <link rel="stylesheet" href="/path/to/your/css/styles.css"> <!-- Link to your CSS file if any -->
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
   <style>
         body {
             display: flex;
@@ -28,21 +28,111 @@
         color: #333;
         }
 
-        ul li a{
-            list-style-type: none;
-            text-decoration: none;
+        ul {
+            list-style-type: none; /* This removes the dot */
+            padding: 0; /* Removes padding from the left */
+        }
+
+        ul li {
+            margin: 10px 0; /*  Adds spacing between the list items */
+        }
+
+        ul li a {
+            text-decoration: none; /* Removes underline from links */
+            color: #007bff; /* Default color */
         }
      </style>    
-
 </head>
 <body>
+  
   <div class="container">
-    <h1>{{message}}</h1>
+    <h1 class="mt-4">{{message}}</h1>
     <p>Select an action below:</p>
     <ul>
       <li><a href="/phonebook/add">Add Contact</a></li>
       <!-- Add more links needed to your routing page -->
     </ul>
+    <!-- Recent Calls Button -->
+    <button class="btn btn-secondary mb-3" onclick="showRecentCalls()">View Recent Calls</button>
+
+
+    <!-- Contact List -->
+    <div class="contact-container list-group mt-3">
+      {{#each data}}
+        <div class="contact-each list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <p>{{ this.firstName }} {{ this.lastName }}</p>
+            <p>{{ this.phone }}</p>
+          </div>
+          
+          <!-- Fake Dial Button -->
+          <button class="btn btn-primary dial-btn" onclick="dial('{{ this.phone }}')">Dial</button>
+        </div>
+      {{/each}}
+    </div>
+    
+     <!-- Recent Calls Modal -->
+    <div class="modal" tabindex="-1" role="dialog" id="recentCallsModal"></div>
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Recent Calls</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <ul id="recent-calls-list" class="list-group">
+              <!-- Recent calls will be appended here dynamically -->
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script>
+  <!-- Fake Dialing Script -->
+  function dial(phoneNumber, contactName) {
+      alert('Dialing ' + contactName + ' (' + phoneNumber + ')...');
+      // Simulate a call by sending data to the backend
+      fetch('/call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber, contactName }) // Make sure to pass both phoneNumber and contactName
+      });
+  }
+
+
+  function showRecentCalls() {
+  // Fetch recent calls from the backend and show them in the modal
+  fetch('/recent-calls')
+    .then(response => response.json())
+    .then(data => {
+      const recentCallsList = document.getElementById('recent-calls-list');
+      recentCallsList.innerHTML = ''; // Clear existing list
+
+      data.forEach(call => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        // Ensure contactName and phoneNumber are correctly accessed
+        li.textContent = `${call.contactName || 'Unknown'} - ${call.phoneNumber} (Called on ${new Date(call.timestamp).toLocaleString()})`;
+        recentCallsList.appendChild(li);
+      });
+
+      // Show the modal with recent calls
+      $('#recentCallsModal').modal('show');
+    });
+  }
+
+  </script>
+  <!-- Bootstrap JS, Popper.js, and jQuery -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
 </body>
 </html>
